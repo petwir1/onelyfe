@@ -5,6 +5,16 @@
 // HELP ME
 // -----------------------------------------------
 
+/proc/html_attr(t as text)
+	if(!istext(t)) return ""
+	var/s = "[t]"
+	s = replacetext(s, "&", "&amp;")
+	s = replacetext(s, "<", "&lt;")
+	s = replacetext(s, ">", "&gt;")
+	s = replacetext(s, "\"", "&quot;")
+	s = replacetext(s, "'", "&#39;")
+	return s
+
 /proc/_is_digit_string(t)
 	if(!istext(t)) return FALSE
 	if(length(t) != 4) return FALSE
@@ -23,7 +33,15 @@
 /proc/_has_quest_lock(H)
 	if(!istype(H, /mob/living/carbon/human)) return FALSE
 	var/mob/living/carbon/human/HH = H
-	return HH.has_status_effect(/datum/status_effect/debuff/quest_lock)
+
+	if(HH.has_status_effect(/datum/status_effect/debuff/quest_lock))
+		return TRUE
+	if(HH.has_status_effect(/datum/status_effect/buff/parish_boon))
+		return TRUE
+	if(HH.has_status_effect(/datum/status_effect/debuff/parish_burden))
+		return TRUE
+
+	return FALSE
 
 /proc/_apply_quest_lock(H)
 	if(!istype(H, /mob/living/carbon/human)) return
@@ -31,12 +49,17 @@
 	if(!HH.has_status_effect(/datum/status_effect/debuff/quest_lock))
 		HH.apply_status_effect(/datum/status_effect/debuff/quest_lock)
 
-/proc/_apply_parish_boon(H)
+	proc/_apply_parish_boon(H)
 	if(!istype(H, /mob/living/carbon/human)) return
 	var/mob/living/carbon/human/HH = H
 	HH.apply_status_effect(/datum/status_effect/buff/parish_boon)
 
-/proc/_is_antagonist(H)
+	proc/_apply_parish_burden(H)
+	if(!istype(H, /mob/living/carbon/human)) return
+	var/mob/living/carbon/human/HH = H
+	HH.apply_status_effect(/datum/status_effect/debuff/parish_burden)
+
+	proc/_is_antagonist(H)
 	if(!istype(H, /mob/living/carbon/human)) return FALSE
 	var/mob/living/carbon/human/HH = H
 	if(!HH.mind) return FALSE
@@ -62,35 +85,36 @@
 	qdel(O)
 	return n
 
-/proc/_race_satisfies(H, key)
+/proc/_race_satisfies(mob/living/carbon/human/H, key)
 	if(!istype(H, /mob/living/carbon/human)) return FALSE
-	var/mob/living/carbon/human/HH = H
 
 	var/k = lowertext("[key]")
 
-	if(k == "northern_human") return ishumannorthern(HH)
-	if(k == "dwarf")          return isdwarf(HH)
-	if(k == "dark_elf")       return isdarkelf(HH)
-	if(k == "wood_elf")       return iswoodelf(HH)
-	if(k == "half_elf")       return ishalfelf(HH)
-	if(k == "half_orc")       return ishalforc(HH)
-	if(k == "goblin")         return isgoblinp(HH)
-	if(k == "kobold")         return iskobold(HH)
-	if(k == "lizard")         return islizard(HH)
-	if(k == "aasimar")        return isaasimar(HH)
-	if(k == "tiefling")       return istiefling(HH)
-	if(k == "halfkin")        return ishalfkin(HH)
-	if(k == "wildkin")        return iswildkin(HH)
-	if(k == "golem")          return isgolemp(HH)
-	if(k == "doll")           return isdoll(HH)
-	if(k == "vermin")         return isvermin(HH)
-	if(k == "dracon")         return isdracon(HH)
-	if(k == "axian")          return isaxian(HH)
-	if(k == "tabaxi")         return istabaxi(HH)
-	if(k == "vulp")           return isvulp(HH)
-	if(k == "lupian")         return islupian(HH)
-	if(k == "moth")           return ismoth(HH)
-	if(k == "lamia")          return islamia(HH)
+	if(k == "northern_human") return is_species(H, /datum/species/human/northern)
+	if(k == "dwarf")          return is_species(H, /datum/species/dwarf)
+	if(k == "dwarf_mountain") return is_species(H, /datum/species/dwarf/mountain)
+	if(k == "elf")            return is_species(H, /datum/species/elf)
+	if(k == "dark_elf")       return is_species(H, /datum/species/elf/dark)
+	if(k == "wood_elf")       return is_species(H, /datum/species/elf/wood)
+	if(k == "half_elf")       return is_species(H, /datum/species/human/halfelf)
+	if(k == "tiefling")       return is_species(H, /datum/species/tieberian)
+	if(k == "dullahan")       return is_species(H, /datum/species/dullahan)
+	if(k == "half_orc")       return is_species(H, /datum/species/halforc)
+	if(k == "lizard")         return is_species(H, /datum/species/lizardfolk)
+	if(k == "goblin")         return is_species(H, /datum/species/goblinp)
+	if(k == "kobold")         return is_species(H, /datum/species/kobold)
+	if(k == "aasimar")        return is_species(H, /datum/species/aasimar)
+	if(k == "halfkin")        return is_species(H, /datum/species/demihuman)
+	if(k == "wildkin")        return is_species(H, /datum/species/anthromorph)
+	if(k == "critter")        return is_species(H, /datum/species/anthromorphsmall)
+	if(k == "axian")          return is_species(H, /datum/species/akula)
+	if(k == "lamia")          return is_species(H, /datum/species/lamia)
+	if(k == "dracon")         return is_species(H, /datum/species/dracon)
+	if(k == "lupian")         return is_species(H, /datum/species/lupian)
+	if(k == "moth")           return is_species(H, /datum/species/moth)
+	if(k == "tabaxi")         return is_species(H, /datum/species/tabaxi)
+	if(k == "vulp")           return is_species(H, /datum/species/vulpkanin)
+	if(k == "harpy")          return is_species(H, /datum/species/harpy)
 
 	return FALSE
 
@@ -104,7 +128,7 @@
 	if(E) qdel(E)
 	return capitalize(n)
 
-/proc/_safe_has_skill_expert(H, skill_type)
+	proc/_safe_has_skill_expert(H, skill_type)
 	if(!istype(H, /mob/living/carbon/human)) return FALSE
 	if(!ispath(skill_type, /datum/skill)) return FALSE
 
@@ -123,7 +147,13 @@
 
 	return FALSE
 
-/proc/_target_has_flaw(H, flaw_type)
+/proc/_is_leaf_type(typepath)
+	if(!ispath(typepath))
+		return FALSE
+	var/list/subs = typesof(typepath)
+	return (!islist(subs) || subs.len <= 1)
+
+	proc/_target_has_flaw(H, flaw_type)
 	if(!istype(H, /mob/living/carbon/human)) return FALSE
 	var/mob/living/carbon/human/HH = H
 	if(!ispath(flaw_type, /datum/charflaw)) return FALSE
@@ -288,11 +318,8 @@
 
 /proc/_rt_antag_tier(mob/living/carbon/human/H)
 	if(_rt_mob_has_antag_datum(H, /datum/antagonist/lich))        return 3
-
-	if(_rt_mob_has_antag_datum(H, /datum/antagonist/werewolf))                     return 2
-
+	if(_rt_mob_has_antag_datum(H, /datum/antagonist/werewolf))    return 2
 	if(_rt_is_bandit_or_wretch(H)) return 1
-
 	return 0
 
 /proc/_rt_pick_unique(list/src_list, count)
@@ -314,20 +341,30 @@
 	var/list/names = list()
 	if(islist(type_list))
 		for(var/T in type_list)
+			if(!ispath(T, /datum/skill)) continue
+			if(!_is_leaf_type(T)) continue
+
 			var/datum/skill/SK = new T
-			var/n = (SK && SK.name) ? SK.name : "[T]"
+			if(SK && istext(SK.name) && length(SK.name))
+				names += SK.name
+			else
+				names += "[T]"
 			if(SK) qdel(SK)
-			names += n
 	return names
 
 /proc/_rt_flaw_names(list/type_list)
 	var/list/names = list()
 	if(islist(type_list))
 		for(var/T in type_list)
+			if(!ispath(T, /datum/charflaw)) continue
+			if(!_is_leaf_type(T)) continue
+
 			var/datum/charflaw/F = new T
-			var/n = (F && F.name) ? F.name : "[T]"
+			if(F && istext(F.name) && length(F.name))
+				names += F.name
+			else
+				names += "[T]"
 			if(F) qdel(F)
-			names += n
 	return names
 
 /proc/_rt_all_job_types_master()
@@ -344,6 +381,7 @@
 		/datum/job/roguetown/councillor,
 		/datum/job/roguetown/physician,
 		/datum/job/roguetown/marshal,
+		/datum/job/roguetown/captain,
 		/datum/job/roguetown/hand,
 		/datum/job/roguetown/knight,
 		/datum/job/roguetown/lady,
@@ -358,9 +396,7 @@
 		/datum/job/roguetown/farmer,
 		/datum/job/roguetown/orphan,
 		/datum/job/roguetown/shophand,
-		/datum/job/roguetown/elder,
 		/datum/job/roguetown/niteman,
-		/datum/job/roguetown/loudmouth,
 		/datum/job/roguetown/archivist,
 		/datum/job/roguetown/barkeep,
 		/datum/job/roguetown/guildmaster,
@@ -370,10 +406,10 @@
 		/datum/job/roguetown/pilgrim,
 		/datum/job/roguetown/adventurer,
 		/datum/job/roguetown/mercenary,
-		/datum/job/roguetown/warden,
+		/datum/job/roguetown/bandit,
+		/datum/job/roguetown/wretch,
 		/datum/job/roguetown/sergeant,
 		/datum/job/roguetown/dungeoneer,
-		/datum/job/roguetown/gatemaster,
 		/datum/job/roguetown/manorguard,
 		/datum/job/roguetown/squire,
 		/datum/job/roguetown/guardsman
@@ -389,9 +425,12 @@
 var/global/list/Q_WITNESS_EFFECTS = list(
 	/datum/status_effect/buff/sermon,
 	/datum/status_effect/buff/drunk,
-	/datum/status_effect/buff/foodbuff,
+	/datum/status_effect/buff/greatsnackbuff,
+	/datum/status_effect/buff/snackbuff,
 	/datum/status_effect/buff/ozium,
 	/datum/status_effect/buff/moondust,
+	/datum/status_effect/buff/murkwine,
+	/datum/status_effect/buff/sweet,
 	/datum/status_effect/buff/moondust_purest,
 	/datum/status_effect/buff/starsugar,
 	/datum/status_effect/buff/weed
@@ -522,6 +561,131 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("Clergy cannot be targeted."))
 		return FALSE
 
+	if(HH.has_status_effect(/datum/status_effect/buff/parish_boon) || HH.has_status_effect(/datum/status_effect/debuff/parish_burden))
+		to_chat(user, span_warning("That target already bears a quest blessing or burden."))
+		return FALSE
+
+	return TRUE
+
+/obj/item/quest_token/proc/_quest_user_in_cmode(mob/user)
+	if(!user) return FALSE
+	if("cmode" in user.vars)
+		return !!user.vars["cmode"]
+	if("combat_mode" in user.vars)
+		return !!user.vars["combat_mode"]
+	return FALSE
+
+/obj/item/quest_token/proc/_resolve_targeted_quest_result(mob/living/carbon/human/H, mob/living/carbon/human/user, action_time = 15 SECONDS)
+	if(!istype(H, /mob/living/carbon/human)) return FALSE
+	if(!istype(user, /mob/living/carbon/human)) return FALSE
+	if(!_ensure_attacker(user)) return FALSE
+	if(!_ensure_target_player(H, user)) return FALSE
+	if(_has_quest_lock(H))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
+		return FALSE
+
+	// ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ В CMODE -> отрицательный дебафф
+	if(_quest_user_in_cmode(user))
+		user.visible_message(
+			span_warning("[user] begins forcing [src] upon [H]!"),
+			span_warning("I begin forcing [src] upon [H]!"),
+			span_warning("[user] begins forcing something upon you!")
+		)
+
+		if(!do_after(user, action_time, target = H))
+			return FALSE
+
+		if(QDELETED(src) || QDELETED(user) || QDELETED(H))
+			return FALSE
+
+		if(get_dist(user, H) > 1)
+			to_chat(user, span_warning("[H] is too far away now."))
+			return FALSE
+
+		if(!_ensure_target_player(H, user))
+			return FALSE
+		if(_has_quest_lock(H))
+			to_chat(user, span_warning("They already bear a quest blessing or burden."))
+			return FALSE
+
+		_apply_parish_burden(H)
+		_apply_quest_lock(H)
+		_payout(reward_amount)
+
+		user.visible_message(
+			span_warning("[user] forces [src] upon [H]."),
+			span_warning("I force [src] upon [H].")
+		)
+		to_chat(H, span_warning("A hostile parish burden is forced upon you."))
+
+		qdel(src)
+		return TRUE
+
+	// ОБЫЧНОЕ ПРИМЕНЕНИЕ -> цель может принять
+	user.visible_message(
+		span_notice("[user] begins offering [src] to [H]..."),
+		span_notice("I begin offering [src] to [H].")
+	)
+
+	if(!do_after(user, action_time, target = H))
+		return FALSE
+
+	if(QDELETED(src) || QDELETED(user) || QDELETED(H))
+		return FALSE
+
+	if(get_dist(user, H) > 1)
+		to_chat(user, span_warning("[H] is too far away now."))
+		return FALSE
+
+	if(!_ensure_target_player(H, user))
+		return FALSE
+	if(_has_quest_lock(H))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
+		return FALSE
+
+	var/accept_choice = alert(H, "Accept this quest token?", src.name, "Accept", "Refuse")
+
+	if(QDELETED(src) || QDELETED(user) || QDELETED(H))
+		return FALSE
+
+	if(accept_choice != "Accept")
+		to_chat(user, span_warning("[H] refuses the token."))
+		to_chat(H, span_notice("You refuse the token."))
+		return FALSE
+
+	H.visible_message(
+		span_notice("[H] begins accepting [src]..."),
+		span_notice("I begin accepting [src].")
+	)
+
+	if(!do_after(H, action_time, target = H))
+		return FALSE
+
+	if(QDELETED(src) || QDELETED(user) || QDELETED(H))
+		return FALSE
+
+	if(get_dist(user, H) > 1)
+		to_chat(user, span_warning("The process is broken by distance."))
+		to_chat(H, span_warning("The process is broken."))
+		return FALSE
+
+	if(!_ensure_target_player(H, user))
+		return FALSE
+	if(_has_quest_lock(H))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
+		return FALSE
+
+	_apply_parish_boon(H)
+	_apply_quest_lock(H)
+	_payout(reward_amount)
+
+	user.visible_message(
+		span_notice("[user] gives [src] to [H]."),
+		span_notice("I give [src] to [H].")
+	)
+	to_chat(H, span_notice("A parish blessing settles upon you."))
+
+	qdel(src)
 	return TRUE
 
 
@@ -544,26 +708,19 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 	if(!_ensure_target_player(H, user)) return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(allowed_tiers) || !allowed_tiers.len)
 		to_chat(user, span_warning("This sigil is misconfigured."))
 		return
 
-	if(!do_after(user, 15 SECONDS, H)) return
-
 	var/tier = _rt_antag_tier(H)
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
+	if(!(tier && (tier in allowed_tiers)))
+		to_chat(user, span_notice("No forbidden taint of that caliber is found."))
+		return
 
-	if(tier && (tier in allowed_tiers))
-		to_chat(user, span_notice("Hidden malice is revealed. You have completed the research."))
-		_payout(reward_amount)
-	else
-		to_chat(user, span_notice("No forbidden taint of that caliber is found. The sigil is spent."))
-
-	qdel(src)
+	return _resolve_targeted_quest_result(H, user, 15 SECONDS)
 */
 
 // 2) Find Expertise
@@ -581,7 +738,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 	if(!_ensure_target_player(H, user)) return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_skills) || !required_skills.len)
@@ -598,12 +755,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("They are not an EXPERT of the required skills."))
 		return
 
-	if(!do_after(user, 15 SECONDS, H)) return
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
-	qdel(src)
+	return _resolve_targeted_quest_result(H, user, 15 SECONDS)
 
 
 // 3) Blood Research
@@ -621,7 +773,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 	if(!_ensure_target_player(H, user)) return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_race_keys) || !required_race_keys.len)
@@ -638,12 +790,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("They are not of the required bloodline(s)."))
 		return
 
-	if(!do_after(user, 15 SECONDS, H)) return
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
-	qdel(src)
+	return _resolve_targeted_quest_result(H, user, 15 SECONDS)
 
 
 // 4) Tithe
@@ -824,7 +971,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 	if(!_ensure_target_player(H, user)) return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_job_types) || !required_job_types.len)
@@ -835,23 +982,18 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("They are not in any of the required professions."))
 		return
 
-	if(!do_after(user, 15 SECONDS, H)) return
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
+	if(!_resolve_targeted_quest_result(H, user, 15 SECONDS))
+		return
 
 	var/obj/item/reagent_containers/food/snacks/rogue/raisinbreadslice/B = new /obj/item/reagent_containers/food/snacks/rogue/raisinbreadslice(get_turf(H))
-	if(istype(H, /mob/living/carbon/human))
-		if(hascall(H, "put_in_hands"))
-			var/success = call(H, "put_in_hands")(B)
-			if(!success)
-				B.forceMove(get_turf(H))
-		else
+	if(hascall(H, "put_in_hands"))
+		var/success = call(H, "put_in_hands")(B)
+		if(!success)
 			B.forceMove(get_turf(H))
 	else
 		B.forceMove(get_turf(H))
-	qdel(src)
+
+	return TRUE
 
 
 // 7) Offering of Supplies
@@ -912,7 +1054,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_patron_names) || !required_patron_names.len)
@@ -923,24 +1065,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("They do not follow any required patron."))
 		return
 
-	user.visible_message(
-		span_notice("[user] begins a brief sermon to [H]."),
-		span_notice("I begin a brief sermon to [H].")
-	)
-
-	if(!do_after(user, 15 SECONDS, target = H))
-		return
-
-	user.visible_message(
-		span_notice("[user] finishes the sermon for [H]."),
-		span_notice("I finish the sermon for [H].")
-	)
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
-	qdel(src)
-	return TRUE
+	return _resolve_targeted_quest_result(H, user, 15 SECONDS)
 
 
 // 9) Witness the Sermon (replaced with find a buff)
@@ -970,7 +1095,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_effect_types) || !required_effect_types.len)
@@ -988,13 +1113,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("They do not bear any of the required effects."))
 		return
 
-	if(!do_after(user, 10 SECONDS, H))
-		return
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
-	qdel(src)
+	return _resolve_targeted_quest_result(H, user, 10 SECONDS)
 
 
 // 10) Researchment of Addiction
@@ -1012,7 +1131,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 	if(!_ensure_target_player(H, user)) return
 
 	if(_has_quest_lock(H))
-		to_chat(user, span_warning("They’ve already answered the call - stand down and let the clock run."))
+		to_chat(user, span_warning("They already bear a quest blessing or burden."))
 		return
 
 	if(!islist(required_flaw_types) || !required_flaw_types.len)
@@ -1029,12 +1148,7 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		to_chat(user, span_warning("Target does not bear any of the required flaws."))
 		return
 
-	if(!do_after(user, 15 SECONDS, H)) return
-
-	_apply_parish_boon(H)
-	_apply_quest_lock(H)
-	_payout(reward_amount)
-	qdel(src)
+	return _resolve_targeted_quest_result(H, user, 15 SECONDS)
 
 
 // ---------------------------------------------------------------------
@@ -1061,10 +1175,10 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 			skill_cands += t
 
 	var/list/race_keys_master = list(
-		"northern_human","dwarf","dark_elf","wood_elf","half_elf","half_orc",
-		"goblin","kobold","lizard","aasimar","tiefling","halfkin","wildkin",
-		"golem","doll","vermin","dracon","axian","tabaxi","vulp","lupian",
-		"moth","lamia"
+		"northern_human","dwarf","dwarf_mountain","elf","dark_elf","wood_elf",
+		"half_elf","tiefling","dullahan","half_orc","lizard","goblin","kobold",
+		"aasimar","halfkin","wildkin","critter","axian","lamia","dracon",
+		"lupian","moth","tabaxi","vulp","harpy"
 	)
 
 	var/list/candidate_types_master = list(
@@ -1086,7 +1200,6 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		candidate_types_master = list(/obj/item/ingot/iron)
 
 	var/list/patron_pool = _rt_patron_name_pool()
-
 	var/list/job_pool = _rt_all_job_types_master()
 
 	var/list/flaw_cands = list()
@@ -1418,3 +1531,39 @@ var/global/list/Q_WITNESS_EFFECTS = list(
 		final_list += list(arch)
 
 	return final_list
+
+
+
+//BUFF
+
+/datum/status_effect/buff/parish_boon
+	id = "parish_boon"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/parish_boon
+	effectedstats = list("perception" = 1, "intelligence" = 1)
+	duration = 20 MINUTES
+
+/atom/movable/screen/alert/status_effect/buff/parish_boon
+	name = "Boon of the Parish"
+	desc = "You lent partial aid to the local church and bear a modest share of its blessing."
+	icon_state = "buff"
+
+	/datum/status_effect/debuff/parish_burden
+	id = "parish_burden"
+	alert_type = /atom/movable/screen/alert/status_effect/debuff/parish_burden
+	effectedstats = list("perception" = -1, "intelligence" = -1)
+	duration = 20 MINUTES
+
+/atom/movable/screen/alert/status_effect/debuff/parish_burden
+	name = "Burden of the Parish"
+	desc = "You refused the church's hand and now bear its burden."
+	icon_state = "debuff"
+
+	/datum/status_effect/debuff/quest_lock
+	id = "quest_lock"
+	alert_type = /atom/movable/screen/alert/status_effect/debuff/quest_lock
+	duration = 20 MINUTES
+
+/atom/movable/screen/alert/status_effect/debuff/quest_lock
+	name = "Edict of the Ten"
+	desc = "A sliver of sacred favor clings to you. Followers of the Ten will not enlist your aid in their routine."
+	icon_state = "debuff"

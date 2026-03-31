@@ -1,3 +1,7 @@
+#ifndef TRAIT_CLERGYRADICAL
+#define TRAIT_CLERGYRADICAL "clergyradical"
+#endif
+
 /// DEFINITIONS ///
 #define CLERIC_ORI -1
 #define CLERIC_T0 0
@@ -115,24 +119,41 @@
 		last_level = level
 	return TRUE
 
+/datum/devotion/proc/_is_clergy_radical(mob/living/carbon/human/H)
+	if(!H || !H.mind)
+		return FALSE
+	var/list/cands = list()
+	if(("assigned_role" in H.mind.vars) && istext(H.mind.vars["assigned_role"]))
+		cands += lowertext("[H.mind.vars["assigned_role"]]")
+	if(("special_role" in H.mind.vars) && istext(H.mind.vars["special_role"]))
+		cands += lowertext("[H.mind.vars["special_role"]]")
+	if(("assigned_job" in H.mind.vars) && istype(H.mind.vars["assigned_job"], /datum/job))
+		var/datum/job/J = H.mind.vars["assigned_job"]
+		if(("title" in J.vars) && istext(J.vars["title"]))
+			cands += lowertext("[J.vars["title"]]")
+		if(("name" in J.vars) && istext(J.vars["name"]))
+			cands += lowertext("[J.vars["name"]]")
+	for(var/txt in cands)
+		if(findtext(txt, "druid") || findtext(txt, "acolyte") || findtext(txt, "churchling"))
+			return TRUE
+	return FALSE
+
 /datum/devotion/proc/_is_learnmiracle_eligible(mob/living/carbon/human/H)
 	if(!H || !H.mind)
 		return FALSE
 	if(!HAS_TRAIT(H, TRAIT_CLERGYRADICAL))
 		return FALSE
-
-	var/txt = lowertext("[H.mind.assigned_role]")
-	return findtext(txt, "druid") || findtext(txt, "acolyte") || findtext(txt, "churchling")
+	return _is_clergy_radical(H)
 
 /datum/devotion/proc/try_add_spells(silent = FALSE)
 	if(!holder?.mind || !patron)
 		return FALSE
-	if(HAS_TRAIT(holder, TRAIT_CLERGYRADICAL))
+	if(_is_clergy_radical(holder))
 		return FALSE
 	if(patron)
 		if(length(patron.miracles))
 			for(var/spell_type in patron.miracles)
-				var/required_tier = patron.miracles[spell_type]			
+				var/required_tier = patron.miracles[spell_type]
 				if(required_tier <= level)
 					if(holder.mind.has_spell(spell_type))
 						continue
@@ -142,6 +163,7 @@
 						to_chat(holder, span_boldnotice("I have unlocked a new spell: [newspell]"))
 					holder.mind.AddSpell(newspell, holder)
 					LAZYADD(granted_spells, newspell)
+
 		if(length(patron.traits_tier))
 			for(var/trait in patron.traits_tier)
 				var/required_tier = patron.traits_tier[trait]
@@ -156,18 +178,19 @@
 //passive_gain 		- Passive devotion gain, if any, will begin processing this datum.
 //devotion_limit	- The CLERIC_REQ max_devotion and max_progression will be set to. Devotee overrides this with its own value!
 //start_maxed		- Whether this class starts out with all devotion maxed. Mostly used by Acolytes & Priests to spawn with everything.
+
 /datum/devotion/proc/grant_miracles(mob/living/carbon/human/H, cleric_tier = CLERIC_T0, passive_gain = 0, devotion_limit, start_maxed = FALSE)
 	if(!H || !H.mind || !patron)
 		return
 	level = cleric_tier
-	if(devotion_limit) //Upper devotion limit - Limits gain to that tier's miracles. Mostly used by Templars / Paladins.
+	if(devotion_limit)
 		max_devotion = devotion_limit
 		max_progression = devotion_limit
 	if(passive_gain)
 		passive_devotion_gain = passive_gain
 		passive_progression_gain = passive_gain
 		START_PROCESSING(SSobj, src)
-	if(start_maxed)		//Mainly for Acolytes & Priests
+	if(start_maxed)
 		max_devotion = CLERIC_REQ_4
 		devotion = max_devotion
 		update_devotion(max_devotion, CLERIC_REQ_4, silent = TRUE)
@@ -176,9 +199,12 @@
 	H.verbs += list(/mob/living/carbon/human/proc/devotionreport, /mob/living/carbon/human/proc/clericpray)
 
 	if(_is_learnmiracle_eligible(H))
-		if(!H.mind.has_spell(/obj/effect/proc_holder/spell/self/learnmiracle))
-			var/obj/effect/proc_holder/spell/self/learnmiracle/L = new
-			H.mind.AddSpell(L)
+		var/miracle_menu_path = text2path("/obj/effect/proc_holder/spell/self/learnmiracle")
+		if(miracle_menu_path)
+			if(!H.mind.has_spell(miracle_menu_path))
+				var/obj/effect/proc_holder/spell/L = new miracle_menu_path
+				if(L)
+					H.mind.AddSpell(L, H)
 
 // Debug verb
 /mob/living/carbon/human/proc/devotionchange()
