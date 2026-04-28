@@ -377,7 +377,7 @@
 	switch(category)
 		if("cat1") return list("food_item" = 6)
 		if("cat2") return list("manabloom_or_manacrystal" = 10)
-		if("cat3") return list("runed_or_leyline" = 5)
+		if("cat3") return list("runed_or_leyline" = 2, "blessed_powder_alt" = 5)
 		if("cat4") return list("enchanted_stone_or_boulder" = 5)
 		if("cat5") return list("vital_item" = 10, "ash" = 10, "compost" = 10)
 		if("cat6") return list("zizobane" = 5, "runed_artifact" = 2, "druid_armor" = 1, "volf_head" = 1, "spider_head" = 1, "tree_seed" = 1, "blessed_seed_powder" = 1, "holy_water_container" = 1)
@@ -410,6 +410,7 @@
 		if("food_item") return "Any fresh or rotten produce"
 		if("manabloom_or_manacrystal") return "Mana bloom OR crystalized mana"
 		if("runed_or_leyline") return "Runed artifact OR leyline shard"
+		if("blessed_powder_alt") return "Blessed seed powder"
 		if("enchanted_stone_or_boulder") return "Enchanted stone (magic power 5+) OR boulder"
 		if("vital_item") return "Sinew, viscera, bonemeal, or skull"
 		if("ash") return "Ash"
@@ -454,6 +455,21 @@
 /obj/structure/flora/roguetree/wise/sanctified/proc/show_ritual_requirements(mob/living/user, category)
 	var/req = get_required_offerings(category)
 	to_chat(user, span_info("=== [get_ritual_display_name(category)] requirements ==="))
+	if(category == "cat3")
+		var/primary_cur = tree_data.ritual_progress["runed_or_leyline"] || 0
+		var/primary_needed = req["runed_or_leyline"]
+		var/alt_cur = tree_data.ritual_progress["blessed_powder_alt"] || 0
+		var/alt_needed = req["blessed_powder_alt"]
+		to_chat(user, span_info("  Offer one of the following alternatives:"))
+		if(primary_cur >= primary_needed)
+			to_chat(user, span_notice("  [get_offering_desc("runed_or_leyline")]: [primary_cur]/[primary_needed] (fulfilled)"))
+		else
+			to_chat(user, span_warning("  Option A — [get_offering_desc("runed_or_leyline")]: [primary_cur]/[primary_needed]"))
+		if(alt_cur >= alt_needed)
+			to_chat(user, span_notice("  [get_offering_desc("blessed_powder_alt")]: [alt_cur]/[alt_needed] (fulfilled)"))
+		else
+			to_chat(user, span_warning("  Option B — [get_offering_desc("blessed_powder_alt")]: [alt_cur]/[alt_needed]"))
+		return
 	for(var/key in req)
 		var/current = tree_data.ritual_progress[key] || 0
 		var/needed = req[key]
@@ -470,9 +486,16 @@
 		to_chat(user, span_warning("I am not holding anything to offer."))
 		return FALSE
 	var/req = get_required_offerings(tree_data.active_ritual)
+	// For cat3, skip accepting items for the alternative path once one path is already completed.
+	var/skip_primary = (tree_data.active_ritual == "cat3") && ((tree_data.ritual_progress["blessed_powder_alt"] || 0) >= req["blessed_powder_alt"])
+	var/skip_alt = (tree_data.active_ritual == "cat3") && ((tree_data.ritual_progress["runed_or_leyline"] || 0) >= req["runed_or_leyline"])
 	for(var/key in req)
 		var/current = tree_data.ritual_progress[key] || 0
 		if(current >= req[key])
+			continue
+		if(skip_primary && key == "runed_or_leyline")
+			continue
+		if(skip_alt && key == "blessed_powder_alt")
 			continue
 		if(!check_offering_match(key, held))
 			continue
@@ -542,6 +565,8 @@
 			return istype(held, /obj/item/reagent_containers/food/snacks/grown/manabloom) || istype(held, /obj/item/magic/manacrystal)
 		if("runed_or_leyline")
 			return istype(held, /obj/item/magic/artifact) || istype(held, /obj/item/magic/leyline)
+		if("blessed_powder_alt")
+			return held.type == /obj/item/alch/blessedseedpowder
 		if("enchanted_stone_or_boulder")
 			if(istype(held, /obj/item/natural/stone))
 				var/obj/item/natural/stone/stone = held
@@ -617,7 +642,7 @@
 
 /obj/structure/flora/roguetree/wise/sanctified/proc/consume_offering(key, obj/item/held, mob/living/user)
 	switch(key)
-		if("food_item", "manabloom_or_manacrystal", "runed_or_leyline", "enchanted_stone_or_boulder")
+		if("food_item", "manabloom_or_manacrystal", "runed_or_leyline", "enchanted_stone_or_boulder", "blessed_powder_alt")
 			qdel(held)
 		if("vital_item", "ash", "compost")
 			qdel(held)
@@ -654,6 +679,11 @@
 	if(!tree_data?.active_ritual)
 		return FALSE
 	var/req = get_required_offerings(tree_data.active_ritual)
+	// Cat 3: runed_or_leyline and blessed_powder_alt are alternatives — either fully satisfied completes the ritual.
+	if(tree_data.active_ritual == "cat3")
+		var/primary_done = (tree_data.ritual_progress["runed_or_leyline"] || 0) >= req["runed_or_leyline"]
+		var/alt_done = (tree_data.ritual_progress["blessed_powder_alt"] || 0) >= req["blessed_powder_alt"]
+		return primary_done || alt_done
 	for(var/key in req)
 		if((tree_data.ritual_progress[key] || 0) < req[key])
 			return FALSE
@@ -790,12 +820,13 @@
 			H.apply_status_effect(/datum/status_effect/buff/dendor_vigil)
 	to_chat(user, span_green("Kneestingers erupt in a ring — the Treefather's vigil strengthens his faithful."))
 
-/// Cat 3 — Fey Weaving: mushroom fey circle seed (repeatable).
-/// Offerings: 5 runed artifacts OR leyline shards. Reward: 1 mushroom_fey seed.
+/// Cat 3 — Fey Weaving: mushroom fey circle seeds (repeatable).
+/// Offerings: 2 runed artifacts OR leyline shards, OR 5 blessed seed powder. Reward: 2 mushroom_fey seeds.
 /obj/structure/flora/roguetree/wise/sanctified/proc/reward_cat3(mob/living/user)
 	var/turf/T = get_turf(user)
 	new /obj/item/seeds/mushroom_fey(T)
-	to_chat(user, span_green("A single handful of mushroom fey spores rises from the roots — the Treefather rewards patience."))
+	new /obj/item/seeds/mushroom_fey(T)
+	to_chat(user, span_green("Two handfuls of mushroom fey spores rise from the roots — the Treefather rewards your patience."))
 
 /// Cat 4 — Treefather's Bulwark: slow aura + integrity boost (once per tree).
 /// Offerings: 5 enchanted stones (magic_power 5+) OR boulders.

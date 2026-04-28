@@ -161,7 +161,7 @@ GLOBAL_LIST_EMPTY(mushroom_circles)
 	if(!active)
 		return
 	maintenance_elapsed += dt
-	if(maintenance_elapsed >= 20 MINUTES)
+	if(maintenance_elapsed >= 90 MINUTES)
 		begin_decay()
 
 /obj/structure/mushroom_circle/fey/proc/begin_decay()
@@ -187,8 +187,8 @@ GLOBAL_LIST_EMPTY(mushroom_circles)
 		var/time_to_final_decay = max(decay_finish_time - world.time, 0)
 		. += span_warning("The circle has lost its power and has become overgrown. Its fey connection is severed — it will collapse in [DisplayTimeText(time_to_final_decay)].")
 		return
-	var/time_to_overgrowth = max((20 MINUTES) - maintenance_elapsed, 0)
-	if(maintenance_elapsed > (15 MINUTES))
+	var/time_to_overgrowth = max((90 MINUTES) - maintenance_elapsed, 0)
+	if(maintenance_elapsed > (75 MINUTES))
 		. += span_warning("The mushrooms look unhealthy. Prune them with scissors soon or the circle will become overgrown in [DisplayTimeText(time_to_overgrowth)].")
 	else
 		. += span_info("The mushrooms glow steadily with fey power. They will become overgrown in [DisplayTimeText(time_to_overgrowth)] if left untended.")

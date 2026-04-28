@@ -319,14 +319,16 @@
 //At some point, this spell should Awaken beasts, allowing a ghost to possess them. Not for this PR though.
 /obj/effect/proc_holder/spell/targeted/beasttame
 	name = "Tame Beast"
-	desc = "Tames a targeted saiga, chicken, cow, goat, volf or spider to be non hostile and tamed."
+	desc = "Pacifies a targeted tameable beast with Dendor's blessing, permanently soothing its anger. Has 2 charges; each restores in 10 seconds, or 1 minute if both are spent."
 	range = 5
+	selection_type = "range"
 	overlay_state = "tamebeast"
 	releasedrain = 30
-	recharge_time = 30 SECONDS
+	charge_type = "charges"
+	recharge_time = 1
 	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
-	max_targets = 0
-	cast_without_targets = TRUE
+	max_targets = 1
+	cast_without_targets = FALSE
 	sound = 'sound/magic/churn.ogg'
 	associated_skill = /datum/skill/magic/holy
 	invocations = list("Be still and calm, brotherbeast.")
@@ -334,23 +336,121 @@
 	miracle = TRUE
 	devotion_cost = 20
 	var/beast_tameable_factions = list("saiga", "chickens", "cows", "goats", "wolfs", "spiders")
+	var/charge_regen_elapsed = 0
+	var/empty_refill_elapsed = 0
+	var/empty_refill_active = FALSE
 
-/obj/effect/proc_holder/spell/targeted/beasttame/cast(list/targets,mob/user = usr)
+/obj/effect/proc_holder/spell/targeted/beasttame/Initialize(mapload)
 	. = ..()
-	visible_message(span_green("[usr] soothes the beastblood with Dendor's whisper."))
-	var/tamed = FALSE
-	for(var/mob/living/simple_animal/hostile/retaliate/animal in get_hearers_in_view(2, usr))
-		if((animal.mob_biotypes & MOB_UNDEAD))
-			continue
-		if(faction_check(animal.faction, beast_tameable_factions))
-			animal.tamed(TRUE)
-			animal.aggressive = FALSE
-			if(animal.ai_controller)
-				animal.ai_controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
-				animal.ai_controller.clear_blackboard_key(BB_BASIC_MOB_RETALIATE_LIST)
-				animal.ai_controller.set_blackboard_key(BB_BASIC_MOB_TAMED, TRUE)
-			to_chat(usr, "With Dendor's aide, you soothe [animal] of their anger.")
-	return tamed
+	charge_counter = 2
+
+/obj/effect/proc_holder/spell/targeted/beasttame/Click()
+	var/mob/living/user = usr
+	if(!istype(user))
+		return
+	if(!can_cast(user))
+		deactivate(user)
+		return
+	if(active)
+		deactivate(user)
+	else
+		active = TRUE
+		add_ranged_ability(user, null, TRUE)
+	update_icon()
+
+/obj/effect/proc_holder/spell/targeted/beasttame/deactivate(mob/living/user)
+	active = FALSE
+	remove_ranged_ability(null)
+	update_icon()
+
+/obj/effect/proc_holder/spell/targeted/beasttame/charge_check(mob/user, silent = FALSE)
+	if(empty_refill_active || charge_counter <= 0)
+		if(!empty_refill_active)
+			empty_refill_active = TRUE
+			empty_refill_elapsed = 0
+			charge_regen_elapsed = 0
+			START_PROCESSING(SSfastprocess, src)
+		if(!silent)
+			to_chat(user, span_warning("[name] is exhausted and must recover before it can be used again."))
+		return FALSE
+	return TRUE
+
+/obj/effect/proc_holder/spell/targeted/beasttame/InterceptClickOn(mob/living/caller, params, atom/target)
+	. = ..()
+	if(.)
+		return TRUE
+	if(!isliving(target))
+		to_chat(caller, span_warning("Tame Beast must be aimed at a living beast."))
+		return TRUE
+	if(!istype(target, /mob/living/simple_animal))
+		to_chat(caller, span_warning("This creature cannot be tamed."))
+		return TRUE
+	var/mob/living/simple_animal/animal = target
+	if((animal.mob_biotypes & MOB_UNDEAD) || !faction_check(animal.faction, beast_tameable_factions))
+		to_chat(caller, span_warning("This beast is not of a tameable kind."))
+		return TRUE
+	if(!can_cast(caller) || !cast_check(FALSE, ranged_ability_user))
+		return TRUE
+	perform(list(target), TRUE, user = ranged_ability_user)
+	return TRUE
+
+/obj/effect/proc_holder/spell/targeted/beasttame/cast(list/targets, mob/user = usr)
+	. = ..()
+	var/mob/living/simple_animal/animal = targets?.len ? targets[1] : null
+	if(!animal || QDELETED(animal))
+		return FALSE
+	visible_message(span_green("[user] soothes the beastblood with Dendor's whisper."))
+	animal.tamed(TRUE)
+	if(istype(animal, /mob/living/simple_animal/hostile/retaliate))
+		var/mob/living/simple_animal/hostile/retaliate/retaliate_animal = animal
+		retaliate_animal.aggressive = FALSE
+	if(animal.ai_controller)
+		animal.ai_controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		animal.ai_controller.clear_blackboard_key(BB_BASIC_MOB_RETALIATE_LIST)
+		animal.ai_controller.set_blackboard_key(BB_BASIC_MOB_TAMED, TRUE)
+	to_chat(user, span_green("With Dendor's blessing, you soothe [animal]'s anger."))
+	return TRUE
+
+/obj/effect/proc_holder/spell/targeted/beasttame/after_cast(list/targets, mob/user = usr)
+	. = ..()
+	if(charge_counter <= 0)
+		empty_refill_active = TRUE
+		empty_refill_elapsed = 0
+		charge_regen_elapsed = 0
+		START_PROCESSING(SSfastprocess, src)
+		deactivate(user)
+	else
+		empty_refill_active = FALSE
+		charge_regen_elapsed = 0
+		START_PROCESSING(SSfastprocess, src)
+		if(active)
+			add_ranged_ability(user, null, TRUE)
+	if(action)
+		action.UpdateButtonIcon()
+
+/obj/effect/proc_holder/spell/targeted/beasttame/process()
+	if(empty_refill_active)
+		empty_refill_elapsed += 2
+		if(empty_refill_elapsed >= 60 SECONDS)
+			empty_refill_active = FALSE
+			empty_refill_elapsed = 0
+			charge_regen_elapsed = 0
+			charge_counter = 2
+			if(action)
+				action.UpdateButtonIcon()
+			STOP_PROCESSING(SSfastprocess, src)
+		return
+	if(charge_counter < 2)
+		charge_regen_elapsed += 2
+		while(charge_regen_elapsed >= 10 SECONDS && charge_counter < 2)
+			charge_regen_elapsed -= 10 SECONDS
+			charge_counter++
+		if(action)
+			action.UpdateButtonIcon()
+		if(charge_counter >= 2)
+			STOP_PROCESSING(SSfastprocess, src)
+		return
+	STOP_PROCESSING(SSfastprocess, src)
 
 /obj/effect/proc_holder/spell/targeted/conjure_glowshroom
 	name = "Fungal Illumination"

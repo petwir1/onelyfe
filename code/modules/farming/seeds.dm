@@ -497,6 +497,42 @@
 	. = ..()
 	qdel(src)
 
+// Conjured bush seeds bypass the farming skill gate — the druid's blessing provides the knowledge.
+/obj/item/seeds/bush/conjured/attack_turf(turf/T, mob/living/user)
+	var/obj/structure/soil/soil = locate(/obj/structure/soil) in T
+	if(locate(/obj/structure/bush_sapling) in T)
+		to_chat(user, span_warning("There's already a bush sapling growing here."))
+		return
+	if(!soil && !istype(T, /turf/open/floor/rogue/dirt) && !istype(T, /turf/open/floor/rogue/grass))
+		to_chat(user, span_warning("I need to plant this in soil, on dirt, or on grass."))
+		return
+	to_chat(user, span_notice("I begin mounding up earth for the bush seed..."))
+	if(!do_after(user, get_farming_do_time(user, 10 SECONDS), target = src))
+		return
+	// Re-check after delay
+	if(locate(/obj/structure/bush_sapling) in T)
+		return
+	if(!soil)
+		soil = locate(/obj/structure/soil) in T
+		if(!soil)
+			if(!istype(T, /turf/open/floor/rogue/dirt) && !istype(T, /turf/open/floor/rogue/grass))
+				return
+			soil = new /obj/structure/soil(T)
+	new /obj/structure/bush_sapling(T)
+	to_chat(user, span_notice("I plant the bush seed and pat down the earth."))
+	qdel(src)
+
+/obj/item/seeds/bush/conjured/try_plant_seed(mob/living/user, obj/structure/soil/soil)
+	if(soil.plant || soil.has_custom_growth())
+		to_chat(user, span_warning("There is already something growing in \the [soil]!"))
+		return
+	if(locate(/obj/structure/bush_sapling) in get_turf(soil))
+		to_chat(user, span_warning("There's already a bush sapling growing here."))
+		return
+	new /obj/structure/bush_sapling(get_turf(soil))
+	to_chat(user, span_notice("I plant the bush seed and pat down the earth."))
+	qdel(src)
+
 /obj/item/seeds/flower/conjured
 	name = "conjured flower seeds"
 	desc = "Flower seeds called forth by the Treefather's will. They will vanish if dropped. Use in-hand to choose which flower to cultivate."
@@ -520,8 +556,15 @@
 /obj/item/seeds/mushroom_fey/attack_turf(turf/T, mob/living/user)
 	var/obj/structure/soil/soil = locate(/obj/structure/soil) in T
 	if(!soil)
-		to_chat(user, span_warning("I need to plant these in a prepared soil plot."))
-		return
+		if(!istype(T, /turf/open/floor/rogue/dirt) && !istype(T, /turf/open/floor/rogue/grass))
+			to_chat(user, span_warning("I need to plant these in a prepared soil plot."))
+			return
+		to_chat(user, span_notice("I begin loosening the earth for the spores..."))
+		if(!do_after(user, 5 SECONDS, target = src))
+			return
+		soil = locate(/obj/structure/soil) in T
+		if(!soil)
+			soil = new /obj/structure/soil(T)
 	if(soil.blessed_time <= 0)
 		to_chat(user, span_warning("The soil must be blessed for these spores to take root."))
 		return
