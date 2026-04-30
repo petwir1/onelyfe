@@ -34,10 +34,11 @@
 	) //No Swimming because skeletons in water is bad.
 /datum/outfit/job/roguetown/wretch/ancientchampion/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.become_skeleton()
-	H.set_patron(/datum/patron/inhumen/zizo) //Your entire purpose.
-	H.adjust_blindness(-3)
+
 	if(H.mind)
+		H.become_skeleton()
+		H.set_patron(/datum/patron/inhumen/zizo) //Your entire purpose.
+		H.adjust_blindness(-3)
 		H.mind.add_antag_datum(new /datum/antagonist/skeleton())
 	head = /obj/item/clothing/head/roguetown/helmet/heavy/zizo
 	neck = /obj/item/clothing/neck/roguetown/bevor
@@ -63,7 +64,7 @@
 		)
 	if(H.mind)
 		H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/zizo_snuff/champion) //Champion-variant of Snuff Lights. Non-miracle, static range of 7, but much longer CD.
-		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/mending/lesser) //You can't take off your armour or do rites, so that's your only way of repairing your armour.
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/mending) //You can't take off your armour or do rites, so that's your only way of repairing your armour.
 		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/deathgrasp) //GET OVER HERE. Fetch that also applies -4 Speed, but with a longer CD.
 		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/profane) //Non-miracle version, your only way of dealing ranged damage.
 		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/bonemend) //Awkward-to-use self-heal.
