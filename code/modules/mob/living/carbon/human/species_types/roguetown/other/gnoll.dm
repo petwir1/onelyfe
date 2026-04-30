@@ -43,6 +43,7 @@
 		TRAIT_ZURCH,
 		TRAIT_EXTREME_TEMPERATURE_IMMUNE,
 		TRAIT_UNLYCKERABLE //Just stop
+		TRAIT_DEATHBYSNUSNU //They should've had this since day one.
 	)
 	inherent_biotypes = MOB_HUMANOID
 	armor = 30
