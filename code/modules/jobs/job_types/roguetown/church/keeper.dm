@@ -79,17 +79,14 @@
 	)
 	adv_stat_ceiling = list(STAT_STRENGTH = 6)
 
+/datum/job/roguetown/keeper/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
+	..()
+	if(ishuman(L))
+		var/mob/living/carbon/human/H = L
 
-/datum/job/roguetown/keeper/proc/_delayed_path_choice(mob/living/carbon/human/H)
-	if(!H || !H.client || !H.mind)
-		return
-
-	var/choice = alert(H, "Choose your path.", "Keeper Doctrine", "Loyalist", "Radical")
-
-	if(choice == "Radical")
-		src.grant_radical_path(H)
-	else
-		src.grant_old_path(H)
+		spawn(50)
+			if(H && H.client)
+				_delayed_path_choice(H)
 
 /datum/outfit/job/roguetown/keeper/basic/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -118,6 +115,17 @@
 							/obj/item/ritechalk = 1,
 							/obj/item/rogueweapon/scabbard/sheath = 2)
 	H.put_in_hands(new /obj/item/storage/belt/rogue/surgery_bag/full/physician(H), TRUE)
+
+/datum/job/roguetown/keeper/proc/_delayed_path_choice(mob/living/carbon/human/H)
+	if(!H || !H.client || !H.mind)
+		return
+
+	var/choice = alert(H, "Choose your path.", "Keeper Doctrine", "Loyalist", "Radical")
+
+	if(choice == "Radical")
+		src.grant_radical_path(H)
+	else
+		src.grant_old_path(H)
 
 /datum/job/roguetown/keeper/proc/grant_old_path(mob/living/carbon/human/H)
 	if(!H || !H.mind || !H.patron)
