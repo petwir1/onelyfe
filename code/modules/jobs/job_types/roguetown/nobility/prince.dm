@@ -131,7 +131,7 @@
 		armor = /obj/item/clothing/suit/roguetown/shirt/dress/royal/princess
 	head = /obj/item/clothing/head/roguetown/circlet
 	belt = /obj/item/storage/belt/rogue/leather/cloth/lady
-	beltr = /obj/item/storage/keyring/heir/nerd
+	beltr = /obj/item/storage/keyring/heir
 	beltl = /obj/item/rogueweapon/huntingknife/idagger/steel/special
 	backr = /obj/item/storage/backpack/rogue/satchel
 	backl = /obj/item/rogueweapon/woodstaff/emerald/blacksteelstaff/royal
