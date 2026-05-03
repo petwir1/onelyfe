@@ -123,6 +123,7 @@
 		/datum/crafting_recipe/roguetown/survival/pipe,
 		/datum/crafting_recipe/roguetown/survival/mantrap,
 		/datum/crafting_recipe/roguetown/survival/paperscroll,
+		/datum/crafting_recipe/roguetown/survival/boneaxe,
 		/datum/crafting_recipe/roguetown/survival/tarot_deck,
 		/datum/crafting_recipe/roguetown/survival/tarot_deck_majorarcana)
 
