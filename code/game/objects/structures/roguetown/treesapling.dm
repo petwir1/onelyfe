@@ -46,8 +46,10 @@
 	var/stage3_state = "t12"
 	var/dead_icon    = 'icons/roguetown/misc/crops.dmi'
 	var/dead_state   = "lemon3"
-	// pixel offsets applied when becoming a young tree
-	var/stage3_pixel_x = -6
+	// pixel offsets applied when advancing stages
+	var/stage2_pixel_x = 0
+	var/stage2_pixel_y = 0
+	var/stage3_pixel_x = -3
 	var/stage3_pixel_y = 0
 
 /obj/structure/tree_sapling/Initialize(mapload)
@@ -110,6 +112,8 @@
 		if(TREESAP_STAGE_SHRUB)
 			icon = stage2_icon
 			icon_state = stage2_state
+			pixel_x = stage2_pixel_x
+			pixel_y = stage2_pixel_y
 			max_integrity = 100
 			obj_integrity = 100
 			static_debris = list(/obj/item/natural/fibers = 1, /obj/item/grown/log/tree/stick = 1)
@@ -199,7 +203,9 @@
 	desc = "A tender pine sapling. Keep it watered and it will grow into a tall pine tree."
 	icon_state = "palebush_3"
 	stage2_state = "pointybush_1"
+	stage2_pixel_x = -3
 	stage3_state = "t11"
+	stage3_pixel_x = -16
 	dead_state = "apple3"
 	tree_final_type = /obj/structure/flora/roguetree/pine
 

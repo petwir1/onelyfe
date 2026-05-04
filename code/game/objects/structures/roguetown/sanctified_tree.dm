@@ -371,6 +371,22 @@
 		if("cat11") return "Winged Rebirth"
 	return "Unknown Ritual"
 
+/// Returns XP awarded to the player upon completing a ritual.
+/obj/structure/flora/roguetree/wise/sanctified/proc/get_ritual_xp(category)
+	switch(category)
+		if("cat1")  return 5
+		if("cat2")  return 25
+		if("cat3")  return 50
+		if("cat4")  return 100
+		if("cat5")  return 100
+		if("cat6")  return 200
+		if("cat7")  return 100
+		if("cat8")  return 25
+		if("cat9")  return 50
+		if("cat10") return 100
+		if("cat12") return 10
+	return 0
+
 /obj/structure/flora/roguetree/wise/sanctified/proc/is_once_per_tree(category)
 	return (category in list("cat4", "cat5", "cat6", "cat7", "cat9", "cat10", "cat11")) // cat12 is repeatable
 
@@ -689,14 +705,6 @@
 
 /obj/structure/flora/roguetree/wise/sanctified/proc/consume_offering(key, obj/item/held, mob/living/user)
 	switch(key)
-		if("tree_sapling_any")
-			qdel(held)
-		if("food_item", "manabloom_or_manacrystal", "runed_or_leyline", "enchanted_stone_or_boulder", "blessed_powder_alt")
-			qdel(held)
-		if("vital_item", "ash", "compost")
-			qdel(held)
-		if("zizobane", "runed_artifact", "volf_head", "spider_head", "tree_seed", "blessed_seed_powder")
-			qdel(held)
 		if("druid_armor")
 			// Move armor to tree's turf and store reference for transmutation.
 			held.forceMove(get_turf(src))
@@ -704,27 +712,14 @@
 		if("holy_water_container")
 			// Drain blessed water but leave the container.
 			held.reagents.remove_reagent(/datum/reagent/water/blessed, 30)
-		if("leechtick", "bones")
-			qdel(held)
-		if("wedding_flower")
-			qdel(held)
-		if("boulder_only", "magic_stone_or_essence", "blessed_powder")
-			qdel(held)
-		if("boulder_cat4", "any_stone_cat4")
-			qdel(held)
-		if("herb_atropa", "herb_matricaria", "herb_symphitum", "herb_taraxacum", "herb_euphrasia",
-		   "herb_paris", "herb_calendula", "herb_mentha", "herb_urtica", "herb_salvia",
-		   "herb_hypericum", "herb_benedictus", "herb_valeriana", "herb_artemisia", "herb_rosa",
-		   "manabloom_single")
-			qdel(held)
-		if("feather", "bonedust", "essence_of_wilderness")
-			qdel(held)
 		if("bloomstone")
 			// Force the bloomstone to drain all charges so Destroy() actually deletes it.
 			held.forceMove(get_turf(src))
 			var/obj/item/alch/bloomstone/offered = held
 			offered.charges = 1
 			qdel(offered)
+		else
+			qdel(held)
 
 /obj/structure/flora/roguetree/wise/sanctified/proc/check_ritual_complete()
 	if(!tree_data?.active_ritual)
@@ -749,20 +744,7 @@
 	playsound(get_turf(src), 'sound/ambience/noises/mystical (4).ogg', 70, TRUE)
 	visible_message(span_green("The [src.name] blazes with golden light as [user.name] completes a sacred ritual!"))
 	// Award Druidic Trickery XP for completing a bounty ritual.
-	var/ritual_xp = 0
-	switch(cat)
-		if("cat1") ritual_xp = 5
-		if("cat2") ritual_xp = 25
-		if("cat3") ritual_xp = 50
-		if("cat4") ritual_xp = 100
-		if("cat12") ritual_xp = 10
-		if("cat5") ritual_xp = 100
-		if("cat6") ritual_xp = 200
-		if("cat7") ritual_xp = 100
-		if("cat8") ritual_xp = 25
-		if("cat9") ritual_xp = 50
-		if("cat10") ritual_xp = 100
-		if("cat11") ritual_xp = 0
+	var/ritual_xp = get_ritual_xp(cat)
 	if(ritual_xp > 0 && user.mind)
 		user.mind.add_sleep_experience(/datum/skill/magic/druidic, ritual_xp)
 	switch(cat)
@@ -895,7 +877,7 @@
 /// Aura: wide green glow, periodic healing for Dendor followers.
 /obj/structure/flora/roguetree/wise/sanctified/proc/reward_cat5(mob/living/user)
 	tree_data.has_heal_aura = TRUE
-	set_light(10, 10, 10, l_color = "#44AA44")
+	set_light(5, 5, 5, l_color = "#44AA44")
 	add_filter("sanctified_outline", 2, list("type" = "outline", "color" = "#58C86A", "alpha" = 60, "size" = 1))
 	visible_message(span_green("A warm green aura blooms from [src.name]. The Treefather's life flows to those who revere him."))
 

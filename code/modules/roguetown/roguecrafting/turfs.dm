@@ -548,3 +548,49 @@
 	verbage_simple = "construct"
 	verbage = "constructs"
 	craftdiff = 3
+// Druidic Grass Turfs
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass
+	abstract_type = /datum/crafting_recipe/roguetown/turfs/druidic_grass
+	req_table = FALSE
+	always_availible = TRUE
+	skillcraft = /datum/skill/magic/druidic
+	craftdiff = SKILL_LEVEL_MASTER
+	reqs = list(
+		/obj/item/fertilizer = 1,
+		/obj/item/natural/fibers = 3,
+	)
+	tools = list(/obj/item/alch/bloomstone = 1)
+	verbage_simple = "grow"
+	verbage = "grows"
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/TurfCheck(mob/user, turf/T)
+	if(isclosedturf(T))
+		return
+	if(!istype(T, /turf/open/floor/rogue))
+		return
+	return TRUE
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/grass
+	name = "grass turf"
+	result = /turf/open/floor/rogue/grass
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/grassred
+	name = "red grass turf"
+	result = /turf/open/floor/rogue/grassred
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/grassyel
+	name = "yellow grass turf"
+	result = /turf/open/floor/rogue/grassyel
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/grasscold
+	name = "cold grass turf"
+	result = /turf/open/floor/rogue/grasscold
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/desert_grass
+	name = "desert grass turf"
+	result = /turf/open/floor/rogue/desert_grass
+
+/datum/crafting_recipe/roguetown/turfs/druidic_grass/grasspurple
+	name = "purple grass turf"
+	result = /turf/open/floor/rogue/grasspurple
