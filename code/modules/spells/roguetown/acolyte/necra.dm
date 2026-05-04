@@ -120,7 +120,7 @@
 
 
 //Choosing between skulls/respite
-/obj/effect/proc_holder/spell/self/necra_spirits
+/* /obj/effect/proc_holder/spell/self/necra_spirits
 	name = "Necra's Spirits"
 	overlay_state = "consecrateburial"
 	desc = "The undermaiden holds vengefulspirits within her grasp, allowing you to choose between <b>Her</b> allies."
@@ -151,7 +151,7 @@
 				if(user.mind?.has_spell(/obj/effect/proc_holder/spell/invoked/raise_spirits_vengeance))//Nope.
 					user.mind?.RemoveSpell(/obj/effect/proc_holder/spell/invoked/raise_spirits_vengeance)
 		else
-			revert_cast()
+			revert_cast() */
 
 // Speak with dead
 
@@ -355,7 +355,10 @@
 /obj/effect/proc_holder/spell/targeted/locate_dead
 	name = "Locate Corpse"
 	desc = "Call upon the Undermaiden to guide you to a lost soul."
-	overlay_state = "necraeye"
+	overlay_icon = 'icons/mob/actions/necramiracles.dmi'
+	overlay_state = "locatecorpse"
+	action_icon = 'icons/mob/actions/necramiracles.dmi'
+	action_icon_state = "locatecorpse"
 	sound = 'sound/magic/whiteflame.ogg'
 	releasedrain = 30
 	chargedrain = 0.5
