@@ -597,6 +597,7 @@
 
 	var/used_time = 50
 	var/light_threshold = rogue_sneaking_light_threshhold
+	var/held_invis_value = (SEE_INVISIBLE_LIVING + (get_skill_level(/datum/skill/misc/sneaking) * 0.55))+1 //At 5 sneak, you get a total of ~24 invis - 3.75 bonus
 	if(mind)
 		used_time = max(used_time - (get_skill_level(/datum/skill/misc/sneaking) * 8), 0)
 		light_threshold += (get_skill_level(/datum/skill/misc/sneaking) / 20)
@@ -605,8 +606,10 @@
 		if(!wallpressed)
 			animate(src, alpha = initial(alpha), time = 10)
 			spawn(10) regenerate_icons()
+			invisibility = initial(invisibility) //Ditto. Stops you from getting stuck invisible.
 		else
 			animate(src, alpha = 255, time = 10)
+			invisibility = initial(invisibility) //fucking lol lmao
 
 		rogue_sneaking = FALSE
 		return
@@ -651,7 +654,7 @@
 			if(light_amount < light_threshold)
 				animate(src, alpha = get_lying_alpha(), time = used_time) //THIS PART CONTROLS REGULAR SNEAKING. USE INVIS HERE.
 				spawn(used_time + 5) regenerate_icons()
-				invisibility = (SEE_INVISIBLE_LIVING + (get_skill_level(/datum/skill/misc/sneaking) * 0.75))+1 //At 5 sneak, you get a total of ~24 invis - 3.75 bonus
+				invisibility = held_invis_value //At 5 sneak, you get a total of ~24 invis - 3.75 bonus
 				rogue_sneaking = TRUE
 	return
 
