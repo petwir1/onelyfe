@@ -825,7 +825,7 @@ Inquisitorial armory down here
 	var/mob/living/lastcarrier
 	var/active = FALSE
 	intdamage_factor = 0
-	var/choke_damage = 25
+	var/choke_damage = 10
 	integrity_failure = 0.01
 	embedding = null
 	sellprice = 0
@@ -888,7 +888,7 @@ Inquisitorial armory down here
 /obj/item/inqarticles/garrote/attack_self(mob/user)
 	if(obj_broken)
 		to_chat(user, span_warning("It's useless now, although.."))
-		to_chat(user, span_notice("I could rethread it with more cordage."))
+		to_chat(user, span_notice("I could rethread it with more cordage or rope."))
 		return
 	if(wielded)
 		ungrip(user, FALSE)
@@ -934,8 +934,8 @@ Inquisitorial armory down here
 
 /obj/item/inqarticles/garrote/attacked_by(obj/item/I, mob/living/user)
 	. = ..()
-	if(istype(I, /obj/item/rope/inqarticles/inquirycord))
-		user.visible_message(span_warning("[user] starts to rethread the [src] using the [I]."))
+	if(istype(I, /obj/item/rope/inqarticles/inquirycord) || (istype(I, /obj/item/rope) && !istype(I, /obj/item/rope/chain)))
+		user.visible_message(span_warning("[user] starts to rethread the [src] using [I]."))
 		if(do_after(user, 8 SECONDS))
 			qdel(I)
 			obj_broken = FALSE
@@ -1060,10 +1060,10 @@ Inquisitorial armory down here
 		return
 	headgear = M.get_item_by_slot(SLOT_HEAD)
 	var/trained = FALSE
-	var/timetobag = 4 SECONDS
+	var/timetobag = 8 SECONDS
 	if(HAS_TRAIT(user, TRAIT_BLACKBAGGER))
 		trained = TRUE
-		timetobag = 1.5 SECONDS
+		timetobag = 4 SECONDS
 	user.visible_message(span_danger("[user] goes to [trained ? "expertly" : "clumsily"] black bag [M]!"))
 	if(HAS_TRAIT(M, TRAIT_GRABIMMUNE))
 		user.visible_message(span_danger("[M] slips past [user]'s attempt to black bag them!"))
