@@ -117,6 +117,7 @@
 
 /area/rogue/indoors/town/magician/rockhill
 	name = "Wizard's Tower"
+	first_time_text = "Tower of the Magos"
 	// detail_text = DETAIL_TEXT_WIZARD_TOWER
 
 /area/rogue/outdoors/exposed/magiciantower
