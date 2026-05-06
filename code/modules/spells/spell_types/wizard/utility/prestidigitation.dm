@@ -170,27 +170,20 @@
 /obj/item/melee/touch_attack/prestidigitation/proc/gather_thing(atom/target, mob/living/carbon/human/user)
 
 	var/skill_level = user.get_skill_level(attached_spell.associated_skill)
-	gatherspeed = initial(gatherspeed) - (skill_level * 3) // 3 cleanspeed per skill level, from 35 down to a maximum of 17 (pretty quick)
+	var/speed = initial(gatherspeed) - (skill_level * 3) // 3 speed per skill level, from 35 down to a maximum of 17 (pretty quick)
 	var/turf/Turf = get_turf(target)
 	if (istype(target, /obj/structure/well/fountain/mana))
-		if (do_after(user, src.gatherspeed, target = target))
+		if (do_after(user, speed, target = target))
 			to_chat(user, span_notice("I mold the liquid mana in \the [target.name] with my arcane power, crystalizing it!"))
 			new /obj/item/magic/manacrystal(Turf)
 	if (istype(target, /turf/open/lava))
-		if (do_after(user, src.gatherspeed, target = target))
+		if (do_after(user, speed, target = target))
 			to_chat(user, span_notice("I mold a handful of oozing lava  with my arcane power, rapidly hardening it!"))
 			new /obj/item/magic/obsidian(user.loc)
 
 // Intents for prestidigitation
 
 /obj/item/melee/touch_attack/prestidigitation/proc/shoot_water_bolt(mob/living/carbon/human/user, atom/target)
-	// Containers must be refillable and have room
-	if(istype(target, /obj/item/reagent_containers))
-		var/obj/item/reagent_containers/RC = target
-		if(!(RC.reagent_flags & REFILLABLE) || !RC.reagents || RC.reagents.total_volume >= RC.reagents.maximum_volume)
-			return FALSE
-	else if(!ismob(target))
-		return FALSE
 	var/obj/projectile/energy/waterbolt/P = new(get_turf(user))
 	P.zone_aimed = user.zone_selected
 	P.firer = user
@@ -228,6 +221,18 @@
 		var/obj/item/reagent_containers/RC = target
 		if((RC.reagent_flags & REFILLABLE) && RC.reagents)
 			RC.reagents.add_reagent(/datum/reagent/water, 5)
+		return BULLET_ACT_HIT
+	// Extinguish lit light sources (braziers, hearths, fireplaces, wall candles, etc.)
+	if(istype(target, /obj/machinery/light/rogue))
+		var/obj/machinery/light/rogue/L = target
+		if(L.on)
+			L.extinguish()
+		return BULLET_ACT_HIT
+	// Extinguish burning items and structures; any obj that reaches this point is not a carbon, so always return
+	if(isobj(target))
+		var/obj/O = target
+		if((O.resistance_flags & ON_FIRE) && O.extinguishable)
+			O.extinguish()
 		return BULLET_ACT_HIT
 	if(!iscarbon(target))
 		return BULLET_ACT_HIT
