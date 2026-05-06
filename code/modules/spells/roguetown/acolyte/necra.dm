@@ -95,7 +95,10 @@
 	range = 6
 	no_early_release = TRUE
 	chargedrain = 0
-	overlay_state = "deathdoor"
+	overlay_icon = 'icons/mob/actions/necramiracles.dmi'
+	overlay_state = "necraportal"
+	action_icon_state = "necraportal"
+	action_icon = 'icons/mob/actions/necramiracles.dmi'
 	charging_slowdown = 1
 	chargetime = 2 SECONDS
 	recharge_time = 30 SECONDS
@@ -352,6 +355,24 @@
 	soul.status_flags &= ~GODMODE
 	soul.density = initial(soul.density) */
 
+/proc/necra_dir_arrow(var/dir)
+	switch(dir)
+		if(NORTH)      return "↑"
+		if(SOUTH)      return "↓"
+		if(EAST)       return "→"
+		if(WEST)       return "←"
+		if(NORTHEAST)  return "↗"
+		if(NORTHWEST)  return "↖"
+		if(SOUTHEAST)  return "↘"
+		if(SOUTHWEST)  return "↙"
+	return "•"
+
+/proc/necra_repeat_arrow(var/arrow, var/count)
+	var/result = ""
+	for(var/i in 1 to count)
+		result += arrow
+	return result
+
 /obj/effect/proc_holder/spell/targeted/locate_dead
 	name = "Locate Corpse"
 	desc = "Call upon the Undermaiden to guide you to a lost soul."
@@ -375,16 +396,20 @@
 /obj/effect/proc_holder/spell/targeted/locate_dead/cast(list/targets, mob/living/user = usr)
 	. = ..()
 	var/list/mob/corpses = list()
+
 	for(var/mob/living/C in GLOB.dead_mob_list)
 		if(!C.mind)
 			continue
+
 		if(istype(C, /mob/living/carbon/human))
 			var/mob/living/carbon/human/B = C
 			if(B.buried)
 				continue
+
 		var/time_dead = 0
 		if(C.timeofdeath)
 			time_dead = world.time - C.timeofdeath
+
 		var/corpse_name
 
 		if(time_dead < 5 MINUTES)
@@ -395,10 +420,12 @@
 			corpse_name = "Long dead "
 		else
 			corpse_name = "Forgotten remains of "
+
 		var/list/d_list = C.get_mob_descriptors()
 		var/trait_desc = "[capitalize(build_coalesce_description_nofluff(d_list, C, list(MOB_DESCRIPTOR_SLOT_TRAIT), "%DESC1%"))]"
 		var/stature_desc = "[capitalize(build_coalesce_description_nofluff(d_list, C, list(MOB_DESCRIPTOR_SLOT_STATURE), "%DESC1%"))]"
 		var/descriptor_name = "[trait_desc] [stature_desc]"
+
 		if(descriptor_name == " ")
 			descriptor_name = "Unknown"
 
@@ -410,27 +437,42 @@
 		revert_cast()
 		return .
 
-	var/mob/selected = tgui_input_list(user, "Which body shall I seek?", "Available Bodies", corpses)
+	var/selected = tgui_input_list(user, "Which body shall I seek?", "Available Bodies", corpses)
 
-	if(QDELETED(src) || QDELETED(user) || QDELETED(corpses[selected]))
+	if(!selected || QDELETED(src) || QDELETED(user) || QDELETED(corpses[selected]))
 		to_chat(user, span_warning("The Undermaiden's grasp lets slip."))
 		return .
 
-	var/corpse = corpses[selected]
+	var/mob/living/corpse = corpses[selected]
 
 	var/turf/turf_user = get_turf(user)
 	var/turf/turf_corpse = get_turf(corpse)
+
+	if(!turf_user || !turf_corpse)
+		to_chat(user, span_warning("The Undermaiden's grasp lets slip."))
+		return .
+
 	var/list/directions = list()
-	// Vertical (Z-level) direction
+	var/arrow = "•"
+
+	// Vertical (Z-level) direction.
 	if(turf_user.z != turf_corpse.z)
+		var/z_difference = abs(turf_corpse.z - turf_user.z)
+
 		if(turf_corpse.z > turf_user.z)
 			directions += "upwards"
+			arrow = necra_repeat_arrow("⇧", z_difference)
 		else
 			directions += "downwards"
+			arrow = necra_repeat_arrow("⇩", z_difference)
 
-	// Horizontal direction (only if we can meaningfully compare)
+	// Horizontal direction.
 	if(turf_user.x != turf_corpse.x || turf_user.y != turf_corpse.y)
 		var/direction = get_dir(turf_user, turf_corpse)
+
+		if(turf_user.z == turf_corpse.z)
+			arrow = necra_dir_arrow(direction)
+
 		switch(direction)
 			if(NORTH)      directions += "north"
 			if(SOUTH)      directions += "south"
@@ -440,6 +482,7 @@
 			if(NORTHWEST)  directions += "northwest"
 			if(SOUTHEAST)  directions += "southeast"
 			if(SOUTHWEST)  directions += "southwest"
+
 	var/dist = get_dist(turf_user, turf_corpse)
 	var/distance_text
 
@@ -460,4 +503,7 @@
 	else
 		direction_text = "nowhere discernible"
 
-	to_chat(user, span_notice("The Undermaiden pulls on your hand, guiding you [direction_text]. [distance_text]"))
+	var/area/corpse_area = get_area(turf_corpse)
+	var/area_text = corpse_area ? corpse_area.name : "an unknown place"
+
+	to_chat(user, span_notice("The Undermaiden pulls on your hand, guiding you <b>[arrow]</b> [direction_text]. [distance_text] Its resting place lies within <b>[area_text]</b>."))
