@@ -10,8 +10,8 @@
 	Their origin comes from the cliffs of Etrusca, but their creation is disputed by scholars to be from one of several gods, but there is no confirmed answer whether they are the creation of Baotha, Eora, Matthios, or even Pestra's hand. \
 	Mistrusted by many for their wily and possessive nature, yet admired by others for their intelligence and beauty, these nomads are oft welcomed at a distance by most new cities they travel to. 	\
 	<span style='color: #cc0f0f;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>-3 CON | -2 STR</span> |<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'> +1 PER | +1 INT | +2 SPD</b></span> </br> \
-	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #00０,-1px 1px ０ #０００,１ｐｘ １ｐｘ ０ #０００;'><ｂ>Flight | Innate Singing | Strong Bites</ｂ></span> </br> \
-	<span style='color: #cc0f0f;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>Can't wear boots</span> | <span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'>Slight Fall Damage Reduction </span></b>"
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>Flight | Innate Singing | Strong Bites</b></span> </br> \
+	<span style='color: #cc0f0f;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>Can't wear boots</span> | <span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #00０;'>Slight Fall Damage Reduction </span></b>"
 
 	expanded_desc = "<b>Harpy</b><br>\
 	Harpies, often called \"songbirds\" or \"Magpies\" by some, resemble the half-kin in appearance at first glance. \
