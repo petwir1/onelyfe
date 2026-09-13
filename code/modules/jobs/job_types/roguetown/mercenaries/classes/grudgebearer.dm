@@ -178,7 +178,8 @@
 /obj/item/clothing/head/roguetown/helmet/heavy/dwarven
 	name = "grudgebearer dwarven helm"
 	desc = "A hardy, layered helmet. It lets one's dwarvenly beard to poke out."
-	body_parts_covered = (HEAD | MOUTH | NOSE | EYES | EARS | NECK)	//This specifically omits hair so you could hang your beard out of the helm
+	body_parts_covered = (FULL_HEAD | NECK)
+	flags_inv = HIDEHAIR
 	armor = ARMOR_GRUDGEBEARER
 	prevent_crits = list(BCLASS_TWIST)
 	allowed_race = list(/datum/species/dwarf, /datum/species/dwarf/mountain)
