@@ -280,7 +280,7 @@
 		"10"	= 50,
 	)
 
-	repair_items = list(/obj/machinery/anvil)
+	//repair_items = list(/obj/machinery/anvil)
 
 	repair_skills = list(
 		/datum/skill/craft/armorsmithing = SKILL_LEVEL_APPRENTICE,
