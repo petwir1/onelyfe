@@ -128,7 +128,7 @@
 					r_hand = /obj/item/rogueweapon/stoneaxe/battle
 					l_hand = /obj/item/rogueweapon/shield/tower/metal/dwarf
 					H.adjust_skillrank_up_to(/datum/skill/combat/axes, 4, TRUE)
-				if("Warpick + Dwarven Shield""
+				if("Warpick + Dwarven Shield")
 					r_hand = /obj/item/rogueweapon/pick/heavy/steel/dwarf
 					l_hand = /obj/item/rogueweapon/shield/tower/metal/dwarf
 					H.adjust_skillrank_up_to(/datum/skill/combat/axes, 4, TRUE)
